@@ -1,0 +1,741 @@
+# Code Repository Snapshot: Task 2 - Form Validation
+
+--------------------------------------------
+Generated with reposnap v1.3.0
+Project: https://github.com/akhshyganesh/reposnap#readme
+Author: akhshyganesh
+Generated on: 2/7/2025 at 3:01:15 pm
+--------------------------------------------
+
+
+📄 README.md
+  ---
+  # React + TypeScript + Vite
+  
+  This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+  
+  Currently, two official plugins are available:
+  
+  - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+  - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+  
+  ## Expanding the ESLint configuration
+  
+  If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+  
+  ```js
+  export default tseslint.config([
+    globalIgnores(['dist']),
+    {
+      files: ['**/*.{ts,tsx}'],
+      extends: [
+        // Other configs...
+  
+        // Remove tseslint.configs.recommended and replace with this
+        ...tseslint.configs.recommendedTypeChecked,
+        // Alternatively, use this for stricter rules
+        ...tseslint.configs.strictTypeChecked,
+        // Optionally, add this for stylistic rules
+        ...tseslint.configs.stylisticTypeChecked,
+  
+        // Other configs...
+      ],
+      languageOptions: {
+        parserOptions: {
+          project: ['./tsconfig.node.json', './tsconfig.app.json'],
+          tsconfigRootDir: import.meta.dirname,
+        },
+        // other options...
+      },
+    },
+  ])
+  ```
+  
+  You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+  
+  ```js
+  // eslint.config.js
+  import reactX from 'eslint-plugin-react-x'
+  import reactDom from 'eslint-plugin-react-dom'
+  
+  export default tseslint.config([
+    globalIgnores(['dist']),
+    {
+      files: ['**/*.{ts,tsx}'],
+      extends: [
+        // Other configs...
+        // Enable lint rules for React
+        reactX.configs['recommended-typescript'],
+        // Enable lint rules for React DOM
+        reactDom.configs.recommended,
+      ],
+      languageOptions: {
+        parserOptions: {
+          project: ['./tsconfig.node.json', './tsconfig.app.json'],
+          tsconfigRootDir: import.meta.dirname,
+        },
+        // other options...
+      },
+    },
+  ])
+  ```
+  
+  ---
+
+📄 eslint.config.js
+  ---
+  import js from '@eslint/js'
+  import globals from 'globals'
+  import reactHooks from 'eslint-plugin-react-hooks'
+  import reactRefresh from 'eslint-plugin-react-refresh'
+  import tseslint from 'typescript-eslint'
+  import { globalIgnores } from 'eslint/config'
+  
+  export default tseslint.config([
+    globalIgnores(['dist']),
+    {
+      files: ['**/*.{ts,tsx}'],
+      extends: [
+        js.configs.recommended,
+        tseslint.configs.recommended,
+        reactHooks.configs['recommended-latest'],
+        reactRefresh.configs.vite,
+      ],
+      languageOptions: {
+        ecmaVersion: 2020,
+        globals: globals.browser,
+      },
+    },
+  ])
+  
+  ---
+
+📄 index.html
+  ---
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Vite + React + TS</title>
+    </head>
+    <body>
+      <div id="root"></div>
+      <script type="module" src="/src/main.tsx"></script>
+    </body>
+  </html>
+  
+  ---
+
+📁 public/
+📁 src/
+  📄 App.tsx
+    ---
+    import { useEffect, useState } from "react";
+    import Header from "./components/Header";
+    import Contact from "./pages/Contact";
+    
+    const App = () => {
+    
+      const [isDark, setIsDark] = useState<boolean>(false);
+      const toggleTheme: () => void = () => {
+        setIsDark(!isDark);
+        document.documentElement.classList.toggle('dark', !isDark);
+      };
+    
+      useEffect(() => {
+        const storedTheme = localStorage.getItem('theme')
+        const prefersDark = storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          setIsDark(prefersDark)
+          document.documentElement.classList.toggle('dark', prefersDark)
+        }, [])
+      
+      useEffect(() => {
+        localStorage.setItem('theme', isDark ? 'dark' : 'light')
+          document.documentElement.classList.toggle('dark', isDark)
+      }, [isDark])
+    
+      return (
+        <div className="min-h-screen max-w-7xl mx-auto dark:bg-gray-900">
+          <Header isDark={isDark} toggleTheme={toggleTheme} />
+          <Contact />
+        </div>
+      )
+    }
+    
+    export default App
+    ---
+
+  📁 assets/
+  📁 components/
+    📄 ContactCheckbox.tsx
+      ---
+      import React from 'react';
+      
+      interface FormCheckboxProps {
+        label: string;
+        name: string;
+        field: any;
+        required?: boolean;
+      }
+      
+      const ContactCheckbox: React.FC<FormCheckboxProps> = ({ label, field, name, required = false }) => {
+        const hasError = field.state.meta.errors?.length > 0;
+      
+        return (
+          <div className="flex flex-col gap-1 md:ml-2">
+            <div className="flex items-start space-x-2">
+              <input
+                name={name}
+                title="checkbox"
+                type="checkbox"
+                checked={field.state.value || false}
+                onChange={(e) => field.handleChange(e.target.checked)}
+                className="mt-0.5 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+              />
+              <label className="text-sm text-gray-700 dark:text-gray-300">
+                {label}
+                {required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+            </div>
+      
+            {hasError && (
+              <p className="text-sm text-red-500 ml-6">
+                {field.state.meta.errors[0]?.message || String(field.state.meta.errors[0])}
+              </p>
+            )}
+          </div>
+        );
+      };
+      
+      export default ContactCheckbox;
+      
+      ---
+
+    📄 ContactFileUpload.tsx
+      ---
+      import React from 'react'
+      import { Upload } from 'lucide-react'
+      
+      interface ContactFileUploadProps {
+        name: string
+        field: any
+        label?: string
+      }
+      
+      const ContactFileUpload: React.FC<ContactFileUploadProps> = ({ name, field, label = 'Upload Additional file' }) => {
+      
+        const file = field.state.value as File | undefined
+        const hasError = field.state.meta.errors?.length > 0
+      
+        const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const file = e.target.files?.[0]
+          field.handleChange(file)
+        }
+      
+        return (
+          <div className="flex flex-col gap-2 w-full col-span-1 sm:col-span-2">
+            <label htmlFor={name} className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-md cursor-pointer transition ${hasError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`}>
+              <div className="flex gap-x-4 items-center justify-center">
+                {!file && <Upload className="w-5 h-5" />}
+                <span className="text-sm">{file?.name || label}</span>
+              </div>
+              <input id={name} name={name} type="file" accept='image/*' className="hidden" onChange={handleFileChange} />
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Attach file. File size of your documents should not exceed 10MB.</p>
+            {hasError && (
+              <p className="text-sm text-red-500">
+                {field.state.meta.errors[0]?.message || String(field.state.meta.errors[0])}
+              </p>
+            )}
+          </div>
+        )
+      }
+      
+      export default ContactFileUpload
+      
+      ---
+
+    📄 ContactForm.tsx
+      ---
+      import { useForm } from "@tanstack/react-form";
+      import { contactSchema } from "../schema/contactSchema";
+      import ContactInput from "./ContactInput";
+      import { useState } from "react";
+      import ContactCheckbox from "./ContactCheckbox";
+      import ContactFileUpload from "./ContactFileUpload";
+      import toast from "react-hot-toast";
+      
+      const ContactForm = () => {
+        const [isSubmitting, setIsSubmitting] = useState(false);
+      
+        const form = useForm({
+          defaultValues: {
+              companyName: '',
+              businessNature: '',
+              address: '',
+              postcode: '',
+              contactName: '',
+              contactPhone: '',
+              email: '',
+              linkedin: '',
+              message: '',
+              file: undefined as unknown as File,
+              nda: false,
+          },
+          onSubmit: async ({ value }) => {
+              setIsSubmitting(true);
+              console.log('Form submitted:', value);
+              toast.success('Form submitted successfully!');
+              form.reset();
+              setIsSubmitting(false);
+          },
+        });
+      
+        return (
+          <div className="sm:w-[60%]">
+              <h1 className="text-4xl font-bold text-black dark:text-white">Contact us</h1>
+      
+              <div className="text-base leading-6 text-gray-600 dark:text-gray-300 mt-4 mb-8">
+                  <p>Need an experienced and skilled hand with custom IT projects?</p>
+                  <p>Fill out the form to get a free consultation.</p>
+              </div>
+      
+              <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(); }} className="flex flex-col gap-y-8">
+                  <form.Field name="companyName" validators={{ onChange: contactSchema.shape.companyName, onBlur: contactSchema.shape.companyName }}>
+                      {(field) => (
+                          <ContactInput name="companyName" placeholder="Your Company Name" field={field} />
+                      )}
+                  </form.Field>
+      
+                  <form.Field name="businessNature" validators={{ onChange: contactSchema.shape.businessNature, onBlur: contactSchema.shape.businessNature }}>
+                      {(field) => (
+                          <ContactInput name="businessNature" placeholder="Nature of Business" field={field} />
+                      )}
+                  </form.Field>
+      
+                  <div className="flex flex-col sm:flex-row gap-y-8 justify-between">
+                      <form.Field name="address" validators={{ onChange: contactSchema.shape.address, onBlur: contactSchema.shape.address }}>
+                          {(field) => (
+                              <ContactInput name="address" placeholder="Address" className="sm:w-[60%]" field={field} />
+                          )}
+                      </form.Field>
+      
+                      <form.Field name="postcode" validators={{ onChange: contactSchema.shape.postcode, onBlur: contactSchema.shape.postcode }}>
+                          {(field) => (
+                              <ContactInput name="postcode" placeholder="Postcode" className="sm:w-[35%]" field={field} />
+                          )}
+                      </form.Field>
+                  </div>
+      
+                  <form.Field name="contactName" validators={{ onChange: contactSchema.shape.contactName, onBlur: contactSchema.shape.contactName }}>
+                      {(field) => (
+                          <ContactInput name="contactName" placeholder="Contact Name" field={field}  />
+                      )}
+                  </form.Field>
+      
+                  <form.Field name="contactPhone" validators={{ onChange: contactSchema.shape.contactPhone, onBlur: contactSchema.shape.contactPhone }}>
+                      {(field) => (
+                          <ContactInput name="contactPhone" placeholder="Contact Phone" field={field} />
+                      )}
+                  </form.Field>
+      
+                  <form.Field name="email" validators={{ onChange: contactSchema.shape.email, onBlur: contactSchema.shape.email }}>
+                      {(field) => (
+                          <ContactInput name="email" placeholder="Email" field={field} type="email" />
+                      )}
+                  </form.Field>
+      
+                  <form.Field name="linkedin" validators={{ onChange: contactSchema.shape.linkedin, onBlur: contactSchema.shape.linkedin }}>
+                      {(field) => (
+                          <ContactInput name="linkedin" placeholder="LinkedIn" field={field} />
+                      )}
+                  </form.Field>
+      
+                  <form.Field name="message" validators={{ onChange: contactSchema.shape.message, onBlur: contactSchema.shape.message }}>
+                      {(field) => (
+                          <ContactInput name="message" placeholder="Let’s talk about your idea" field={field} />
+                      )}
+                  </form.Field>
+      
+                  <form.Field name="file"
+                      validators={{
+                          onChange: (file) => {
+                              console.log('File changed:', file);
+                              if (!file.value || typeof file.value !== 'object'){
+                                  return 'Please upload a valid file';
+                              }
+                              if (file.value?.size > (10 * 1024 * 1024)) {
+                                  return 'File must be less than 10MB';
+                              }
+                              return undefined;
+                          },
+                          onBlur: (file) => {
+                              if (!file.value || typeof file.value !== 'object'){
+                                  return 'Please upload a valid file';
+                              }
+                              if (file.value?.size > (10 * 1024 * 1024)) {
+                                  return 'File must be less than 10MB';
+                              }
+                              return undefined;
+                          }
+                      }}  
+                  >
+                      {(field) => <ContactFileUpload name="file" field={field} />}
+                  </form.Field>
+      
+                  <form.Field name="nda" validators={{ onChange: contactSchema.shape.nda }}>
+                      {(field) => (
+                          <ContactCheckbox label="I want to protect my data by signing an NDA" name="nda" field={field} />
+                      )}
+                  </form.Field>
+      
+                  <div className="w-full">
+                      <button disabled={isSubmitting} type="submit"className="text-white w-full font-medium disabled:bg-green-500 disabled:cursor-not-allowed cursor-pointer text-sm px-6 py-4 bg-green-700">
+                          SUBMIT
+                      </button>
+                  </div>
+              </form>
+          </div>
+        );
+      };
+      
+      export default ContactForm;
+      
+      ---
+
+    📄 ContactInput.tsx
+      ---
+      import React from 'react';
+      
+      interface FormInputProps {
+        name: string
+        type?: string,
+        className?: string,
+        placeholder?: string
+        field: any
+      }
+      
+      const ContactInput: React.FC<FormInputProps> = ({ name, type = 'text', placeholder, field, className }) => {
+      
+          return (
+              <div className={`space-y-1 ${className}`}>
+                  <input type={type} name={name} value={field.state.value || ''} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder={placeholder} className="w-full px-4 py-2 border-b border-gray-400 dark:border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 outline-none text-gray-900 dark:text-gray-100" />
+                  {field.state.meta.errors?.length > 0 && (
+                      <p className="text-red-500 text-sm mt-1">
+                          {field.state.meta.errors[0].message || String(field.state.meta.errors[0])}
+                      </p>
+                  )}
+              </div>
+          );
+      };
+      
+      export default ContactInput;
+      ---
+
+    📄 Header.tsx
+      ---
+      import { Menu, Moon, Sun } from 'lucide-react'
+      
+      interface HeaderProps {
+          isDark: boolean;
+          toggleTheme: () => void;
+      }
+      
+      const Header = ({ isDark, toggleTheme }: HeaderProps) => {
+          return (
+              <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                  <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                      <div className="flex justify-between items-center py-4">
+                      <div className="md:flex hidden items-center">
+                          <div className="text-xl font-bold text-gray-600 dark:text-gray-100">
+                          LOGO
+                          </div>
+                      </div>
+      
+                      <div className="flex md:hidden items-center">
+                          <div className="text-xl font-bold text-gray-600 dark:text-gray-100">
+                              <Menu className='size-7' />
+                          </div>
+                      </div>
+                      
+                      <div className="hidden md:flex items-center space-x-8">
+                          <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 pb-1">Company</a>
+                          <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 pb-1">Services</a>
+                          <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 pb-1">FinTech Solutions</a>
+                          <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 pb-1">Products</a>
+                          <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 pb-1">Portfolio</a>
+                          <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 pb-1 border-b-2 border-b-green-500">Contact us</a>
+                      </div>
+                      
+                      <button
+                          onClick={toggleTheme}
+                          className="p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
+                          {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                      </button>
+                      </div>
+                  </nav>
+              </header>
+          )
+      }
+      
+      export default Header
+      ---
+
+    📄 NewsLetter.tsx
+      ---
+      import { Check } from 'lucide-react';
+      
+      
+      const Newsletter = () => {
+          return (
+              <div className="space-y-3">
+                  <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-6">Would you like to join our newsletter?</h3>
+                  <div className="flex space-x-2">
+                      <input type="email" name="newsletter" placeholder="Email" className="w-full px-4 py-2 border-b border-gray-400 dark:border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 outline-none text-gray-900 dark:text-gray-100" />
+                      <button title="Subscribe" type="button" className="px-4 py-2 bg-green-700 text-white">
+                          <Check className='size-4' />
+                      </button>
+                  </div>
+              </div>
+          );
+      };
+      
+      export default Newsletter;
+      ---
+
+    📄 OfficeDetails.tsx
+      ---
+      import React from 'react';
+      import { offices, quickInquiries } from '../constants/officeData';
+      
+      const OfficeLDetails: React.FC = () => {
+        
+          return (
+              <div className="space-y-16">
+                  <div>
+                      <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-6">Offices</h3>
+                      <div className="space-y-5">
+                          {offices.map((office, index) => (
+                              <div key={index}>
+                                  <div className="font-normal text-gray-600 dark:text-gray-100">
+                                      {office.country}
+                                  </div>
+                                  <div className="text-base text-gray-600 dark:text-gray-400">
+                                      {office.address}
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+      
+                  <div>
+                      <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-6">For Quick Inquiries</h3>
+                      <div className="space-y-2">
+                          {quickInquiries.map((inquiry, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                  <img src={inquiry.img} alt="UK Flag" className="w-5 h-4" />
+                                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                                      {inquiry.phone}
+                                  </span>
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+              </div>
+          );
+      };
+      
+      export default OfficeLDetails;
+      ---
+
+  📁 constants/
+    📄 officeData.ts
+      ---
+      export const offices = [
+          {
+              country: 'United States',
+              address: '500 5th Avenue Suite 400, NY 10110'
+          },
+          {
+              country: 'United Kingdom',
+              address: 'High St, Bromley BR1 1DN'
+          },
+          {
+              country: 'France',
+              address: '80 avenue des Terroirs de France, Paris'
+          }
+      ];
+      
+      export const quickInquiries = [
+          { 
+              flag: '🇸🇬', 
+              phone: '+44 7777777777' ,
+              img: "https://flagcdn.com/gb.svg"
+          },
+          { 
+              flag: '🇺🇸', 
+              phone: '+1 3333333330',
+              img: "https://flagcdn.com/us.svg"
+          }
+      ];
+      ---
+
+  📄 index.css
+    ---
+    @import "tailwindcss";
+    @custom-variant dark (&:where(.dark, .dark *));
+    ---
+
+  📄 main.tsx
+    ---
+    import { createRoot } from 'react-dom/client'
+    import './index.css'
+    import App from './App.tsx'
+    import { Toaster } from 'react-hot-toast'
+    
+    createRoot(document.getElementById('root')!).render(
+      <>
+        <App />
+        <Toaster position="top-left" reverseOrder={false} toastOptions={{style: {backgroundColor: "black", color: "white", paddingRight: "20px", paddingLeft: "20px"}, duration: 1500}} />
+      </>,
+    )
+    
+    ---
+
+  📁 pages/
+    📄 Contact.tsx
+      ---
+      import ContactForm from "../components/ContactForm"
+      import Newsletter from "../components/NewsLetter"
+      import OfficeLDetails from "../components/OfficeDetails"
+      
+      
+      const Contact = () => {
+        return (
+          <div className="max-w-7xl py-10 md:py-20 mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between gap-y-20 items-start">
+             <ContactForm />
+      
+              <div className="sm:w-[30%] space-y-16">
+                  <OfficeLDetails />
+                  <Newsletter />
+              </div>
+          </div>
+        )
+      }
+      
+      export default Contact
+      ---
+
+  📁 schema/
+    📄 contactSchema.ts
+      ---
+      import { z } from 'zod';
+      
+      export const contactSchema = z.object({
+          companyName: z.string().min(1, 'Company name is required'),
+          businessNature: z.string().min(1, 'Nature of business is required'),
+          address: z.string().min(1, 'Address is required'),
+          postcode: z.string().regex(/^\d{6,}$/, 'Postcode must be at least 6 digits'),
+          contactName: z.string().min(1, 'Contact name is required'),
+          contactPhone: z.string().regex(/^\d{10,}$/, 'Phone number must be at least 10 digits'),
+          email: z.string().email('Please enter a valid email address'),
+          linkedin: z.string().url('Please enter a valid LinkedIn URL'),
+          message: z.string().min(10, 'Message must be at least 10 characters'),
+          file: z.instanceof(File, { message: 'Please upload a valid file' }).refine((file) => file.size <= 10 * 1024 * 1024, {message: 'File must be less than 10MB'}),
+          nda: z.boolean().refine((val) => val === true, 'You must agree to the NDA to proceed'),
+      });
+      
+      export type ContactFormData = z.infer<typeof contactSchema>;
+      
+      ---
+
+  📄 vite-env.d.ts
+    ---
+    /// <reference types="vite/client" />
+    
+    ---
+
+📄 tsconfig.app.json
+  ---
+  {
+    "compilerOptions": {
+      "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+      "target": "ES2022",
+      "useDefineForClassFields": true,
+      "lib": ["ES2022", "DOM", "DOM.Iterable"],
+      "module": "ESNext",
+      "skipLibCheck": true,
+  
+      /* Bundler mode */
+      "moduleResolution": "bundler",
+      "allowImportingTsExtensions": true,
+      "verbatimModuleSyntax": true,
+      "moduleDetection": "force",
+      "noEmit": true,
+      "jsx": "react-jsx",
+  
+      /* Linting */
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "erasableSyntaxOnly": true,
+      "noFallthroughCasesInSwitch": true,
+      "noUncheckedSideEffectImports": true
+    },
+    "include": ["src"]
+  }
+  
+  ---
+
+📄 tsconfig.json
+  [Binary file]
+
+📄 tsconfig.node.json
+  ---
+  {
+    "compilerOptions": {
+      "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+      "target": "ES2023",
+      "lib": ["ES2023"],
+      "module": "ESNext",
+      "skipLibCheck": true,
+  
+      /* Bundler mode */
+      "moduleResolution": "bundler",
+      "allowImportingTsExtensions": true,
+      "verbatimModuleSyntax": true,
+      "moduleDetection": "force",
+      "noEmit": true,
+  
+      /* Linting */
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "erasableSyntaxOnly": true,
+      "noFallthroughCasesInSwitch": true,
+      "noUncheckedSideEffectImports": true
+    },
+    "include": ["vite.config.ts"]
+  }
+  
+  ---
+
+📄 vite.config.ts
+  ---
+  import { defineConfig } from 'vite'
+  import react from '@vitejs/plugin-react'
+  import tailwindcss from '@tailwindcss/vite'
+  
+  // https://vite.dev/config/
+  export default defineConfig({
+    plugins: [react(), tailwindcss()],
+  })
+  
+  ---
+
+
+# Snapshot Summary
+Total files processed: 21

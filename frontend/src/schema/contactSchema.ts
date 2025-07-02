@@ -6,7 +6,7 @@ export const contactSchema = z.object({
     address: z.string().min(1, 'Address is required'),
     postcode: z.string().regex(/^\d{6,}$/, 'Postcode must be at least 6 digits'),
     contactName: z.string().min(1, 'Contact name is required'),
-    contactPhone: z.string().regex(/^\d{10,}$/, 'Phone number must be at least 10 digits'),
+    contactPhone: z.string().regex(/^\d{12,}$/, 'Phone number must be at least 10 digits'),
     email: z.string().email('Please enter a valid email address'),
     linkedin: z.string().url('Please enter a valid LinkedIn URL'),
     message: z.string().min(10, 'Message must be at least 10 characters'),
