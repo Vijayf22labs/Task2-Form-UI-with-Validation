@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  .custom-phone-input {
+    @apply w-full px-4 py-2 border-0 border-b border-gray-400 dark:border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 outline-none text-gray-900 dark:text-gray-100 bg-transparent;
+  }
+    .custom-phone-input {
+    @apply !w-full px-4 py-2 border-0 border-b border-gray-400 dark:border-gray-600 placeholder-gray-400 dark:placeholder-gray-500 outline-none text-gray-900 dark:text-gray-100 bg-transparent;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    }
+    .react-tel-input .form-control {
+    @apply !w-full !border-0 !border-b !rounded-none !bg-transparent !shadow-none;
+    }
+    .react-tel-input {
+    @apply !w-full;
+    }
+}

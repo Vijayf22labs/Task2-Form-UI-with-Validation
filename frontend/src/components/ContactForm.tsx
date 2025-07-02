@@ -5,6 +5,8 @@ import { useState } from "react";
 import ContactCheckbox from "./ContactCheckbox";
 import ContactFileUpload from "./ContactFileUpload";
 import toast from "react-hot-toast";
+import { Axios } from "../utils/Axios";
+import { Loader2 } from "lucide-react";
 
 const ContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,11 +26,35 @@ const ContactForm = () => {
         nda: false,
     },
     onSubmit: async ({ value }) => {
-        setIsSubmitting(true);
-        console.log('Form submitted:', value);
-        toast.success('Form submitted successfully!');
-        form.reset();
-        setIsSubmitting(false);
+        try {
+            setIsSubmitting(true);
+
+            const formData = new FormData()
+            formData.append('companyName', value.companyName)
+            formData.append('businessNature', value.businessNature)
+            formData.append('address', value.address)
+            formData.append('postcode', value.postcode)
+            formData.append('contactName', value.contactName)
+            formData.append('contactPhone', value.contactPhone)
+            formData.append('email', value.email)
+            formData.append('linkedin', value.linkedin)
+            formData.append('message', value.message)
+            formData.append('nda', value.nda.toString())
+            formData.append('file', value.file)
+
+            const response = await Axios.post('/contact/save', formData)
+            if(response.data.success){
+                toast.success(response.data.message || 'Form submitted successfully!')
+                form.reset()
+            }
+        } 
+        catch(err){
+            console.log(`Submit error: ${err}`);
+            toast.error('Submission failed. Please try again.');
+        } 
+        finally{
+            setIsSubmitting(false);
+        }
     }
   });
 
@@ -42,57 +68,57 @@ const ContactForm = () => {
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(); }} className="flex flex-col gap-y-8">
-            <form.Field name="companyName" validators={{ onChange: contactSchema.shape.companyName }}>
+            <form.Field name="companyName" validators={{ onChange: contactSchema.shape.companyName, onBlur: contactSchema.shape.companyName }}>
                 {(field) => (
                     <ContactInput name="companyName" placeholder="Your Company Name" field={field} />
                 )}
             </form.Field>
 
-            <form.Field name="businessNature" validators={{ onChange: contactSchema.shape.businessNature }}>
+            <form.Field name="businessNature" validators={{ onChange: contactSchema.shape.businessNature, onBlur: contactSchema.shape.businessNature }}>
                 {(field) => (
                     <ContactInput name="businessNature" placeholder="Nature of Business" field={field} />
                 )}
             </form.Field>
 
             <div className="flex flex-col sm:flex-row gap-y-8 justify-between">
-                <form.Field name="address" validators={{ onChange: contactSchema.shape.address }}>
+                <form.Field name="address" validators={{ onChange: contactSchema.shape.address, onBlur: contactSchema.shape.address }}>
                     {(field) => (
-                    <ContactInput name="address" placeholder="Address" className="sm:w-[60%]" field={field} />
+                        <ContactInput name="address" placeholder="Address" className="sm:w-[60%]" field={field} />
                     )}
                 </form.Field>
 
-                <form.Field name="postcode" validators={{ onChange: contactSchema.shape.postcode }}>
+                <form.Field name="postcode" validators={{ onChange: contactSchema.shape.postcode, onBlur: contactSchema.shape.postcode }}>
                     {(field) => (
                         <ContactInput name="postcode" placeholder="Postcode" className="sm:w-[35%]" field={field} />
                     )}
                 </form.Field>
             </div>
 
-            <form.Field name="contactName" validators={{ onChange: contactSchema.shape.contactName }}>
+            <form.Field name="contactName" validators={{ onChange: contactSchema.shape.contactName, onBlur: contactSchema.shape.contactName }}>
                 {(field) => (
                     <ContactInput name="contactName" placeholder="Contact Name" field={field}  />
                 )}
             </form.Field>
 
-            <form.Field name="contactPhone" validators={{ onChange: contactSchema.shape.contactPhone }}>
+            <form.Field name="contactPhone" validators={{ onChange: contactSchema.shape.contactPhone, onBlur: contactSchema.shape.contactPhone }}>
                 {(field) => (
                     <ContactInput name="contactPhone" placeholder="Contact Phone" field={field} />
                 )}
             </form.Field>
 
-            <form.Field name="email" validators={{ onChange: contactSchema.shape.email }}>
+            <form.Field name="email" validators={{ onChange: contactSchema.shape.email, onBlur: contactSchema.shape.email }}>
                 {(field) => (
                     <ContactInput name="email" placeholder="Email" field={field} type="email" />
                 )}
             </form.Field>
 
-            <form.Field name="linkedin" validators={{ onChange: contactSchema.shape.linkedin }}>
+            <form.Field name="linkedin" validators={{ onChange: contactSchema.shape.linkedin, onBlur: contactSchema.shape.linkedin }}>
                 {(field) => (
                     <ContactInput name="linkedin" placeholder="LinkedIn" field={field} />
                 )}
             </form.Field>
 
-            <form.Field name="message" validators={{ onChange: contactSchema.shape.message }}>
+            <form.Field name="message" validators={{ onChange: contactSchema.shape.message, onBlur: contactSchema.shape.message }}>
                 {(field) => (
                     <ContactInput name="message" placeholder="Let’s talk about your idea" field={field} />
                 )}
@@ -109,7 +135,7 @@ const ContactForm = () => {
                             return 'File must be less than 10MB';
                         }
                         return undefined;
-                    },
+                    }
                 }}  
             >
                 {(field) => <ContactFileUpload name="file" field={field} />}
@@ -122,8 +148,8 @@ const ContactForm = () => {
             </form.Field>
 
             <div className="w-full">
-                <button disabled={isSubmitting} type="submit"className="text-white w-full font-medium disabled:bg-green-500 disabled:cursor-not-allowed cursor-pointer text-sm px-6 py-4 bg-green-700">
-                    SUBMIT
+                <button disabled={isSubmitting} type="submit"className="text-white w-full flex items-center justify-center gap-2 font-medium disabled:bg-green-500 disabled:cursor-not-allowed cursor-pointer text-sm px-6 py-4 bg-green-700">
+                    {!isSubmitting ? <>SUBMIT</> : <><Loader2 className="size-5 animate-spin" />Loading...</>}
                 </button>
             </div>
         </form>
